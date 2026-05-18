@@ -3,6 +3,7 @@ module scr1_top_gowin
    input wire        clk,
    input wire        rst_n,
 
+   // LCD Interface
    output wire       lcd_clk,
    output wire       lcd_en,
    output wire [5:0] lcd_r,
@@ -10,6 +11,9 @@ module scr1_top_gowin
    output wire [5:0] lcd_b
    );
 
+   ///////////////////////
+   // AHB BUS INTERFACE //
+   ///////////////////////
    wire [31:0] dmem_haddr;
    wire        dmem_hwrite;
    wire [ 1:0] dmem_htrans;
@@ -19,6 +23,9 @@ module scr1_top_gowin
    wire [31:0] dmem_hrdata;
    wire        dmem_hresp;
 
+   //////////////////////////
+   // CORE 0 (mhartid = 0) //
+   //////////////////////////
    scr1_top_ahb u_cpu
      (
       .pwrup_rst_n    (rst_n),
@@ -29,7 +36,7 @@ module scr1_top_gowin
       .clk            (clk),
       .rtc_clk        (clk),
 
-      .fuse_mhartid   (32'd0),
+      .fuse_mhartid   (32'd0), // <= core id 0
       .irq_lines      (16'd0),
       .soft_irq       (1'b0),
 
@@ -66,6 +73,9 @@ module scr1_top_gowin
       .dmem_hresp     (dmem_hresp)
       );
 
+   ////////////////////////
+   // AHB TO VRAM BRIDGE //
+   ////////////////////////
    reg [31:0] ahb_addr_r;
    reg        ahb_wr_r;
    reg        ahb_sel_r;
@@ -96,6 +106,9 @@ module scr1_top_gowin
    assign dmem_hresp  = 1'b0;
    assign dmem_hrdata = 32'd0;
 
+   ////////////////
+   // SCREEN DRV //
+   ////////////////
    cp866_screen_drv u_lcd
      (
       .rst_n        (rst_n),
